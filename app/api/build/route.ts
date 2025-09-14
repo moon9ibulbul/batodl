@@ -122,7 +122,7 @@ async function process(jobId: string, opts: any) {
       }));
 
       let metas = await Promise.all(resized.map(async buf => await sharp(buf).metadata()));
-      const baseWidth = targetWidth ?? Math.max(...metas.map(m => m.width || 0)) || (await sharp(resized[0]).metadata()).width || 720;
+      const baseWidth = (targetWidth ?? Math.max(...metas.map(m => m.width || 0))) || ((await sharp(resized[0]).metadata()).width ?? 720);
 
       const guarded = await Promise.all(resized.map(async (buf, i) => {
         const w = metas[i].width || 0;
