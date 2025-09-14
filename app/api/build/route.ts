@@ -67,6 +67,8 @@ async function process(jobId: string, opts: any) {
     set(`Fetched ${i+1}/${idsArr.length} chapter(s)…`, Math.min(15 + Math.floor(((i+1)/idsArr.length)*20), 35));
   }
 
+  const { tmpdir } = await import('node:os');
+  const { join } = await import('node:path');
   const fs = await import('node:fs/promises');
   const sharp = (await import('sharp')).default;
 
