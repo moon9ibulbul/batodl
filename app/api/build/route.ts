@@ -210,3 +210,4 @@ const expiresAt = Date.now() + 10 * 60 * 1000;
 await fsp.writeFile(markerPath, JSON.stringify({ jobId, downloadPath: path, expiresAt }), 'utf8');
 
 store.set(jobId, { stage: 'Done', percent: 100, downloadPath: path as any, expiresAt });
+}
