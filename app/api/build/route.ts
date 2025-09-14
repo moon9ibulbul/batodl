@@ -186,22 +186,27 @@ async function process(jobId: string, opts: any) {
   }
 
   // Zip
-  const fs2 = await import('node:fs');
-  const fsp = await import('node:fs/promises');
-  const archiver = (await import('archiver')).default;
-  set('Zipping…', 90);
-  const outPath = join(tmpdir(), `bato-${jobId}.zip`);
-  await fsp.rm(outPath, { force: true });
-  const output = fs2.createWriteStream(outPath);
-  const archive = archiver('zip', { zlib: { level: 9 } });
-  archive.directory(jobDir, false);
-  const p = new Promise<string>((resolve, reject) => {
-    output.on('close', () => resolve(outPath));
-    archive.on('error', reject);
-  });
-  archive.pipe(output);
-  archive.finalize();
-  const path = await p;
-  const expiresAt = Date.now() + 10*60*1000;
-  store.set(jobId, { stage: 'Done', percent: 100, downloadPath: path as any, expiresAt });
-}
+const fs2 = await import('node:fs');
+const fsp = await import('node:fs/promises');
+const archiver = (await import('archiver')).default;
+
+set('Zipping…', 90);
+const outPath = join(tmpdir(), `bato-${jobId}.zip`);
+await fsp.rm(outPath, { force: true });
+const output = fs2.createWriteStream(outPath);
+const archive = archiver('zip', { zlib: { level: 9 } });
+archive.directory(jobDir, false);
+const p = new Promise<string>((resolve, reject) => {
+  output.on('close', () => resolve(outPath));
+  archive.on('error', reject);
+});
+archive.pipe(output);
+archive.finalize();
+const path = await p;
+
+// tulis marker di /tmp supaya instance lain bisa baca
+const markerPath = join(tmpdir(), `bato-${jobId}.json`);
+const expiresAt = Date.now() + 10 * 60 * 1000;
+await fsp.writeFile(markerPath, JSON.stringify({ jobId, downloadPath: path, expiresAt }), 'utf8');
+
+store.set(jobId, { stage: 'Done', percent: 100, downloadPath: path as any, expiresAt });
