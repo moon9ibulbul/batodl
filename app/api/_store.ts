@@ -13,7 +13,6 @@ if (!g.__BATOSTORE__) {
 export const store: Map<string, Status> = g.__BATOSTORE__;
 
 function ensureCleanupTimer() {
-  const g = global as any;
   if (g.__BATO_CLEANER__) return;
   g.__BATO_CLEANER__ = setInterval(async () => {
     try {

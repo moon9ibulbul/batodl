@@ -8,9 +8,7 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const jobId = searchParams.get('jobId') || '';
   const s = store.get(jobId);
-  if (!s || !s.downloadPath) {
-    return new Response('Not ready', { status: 404 });
-  }
+  if (!s || !s.downloadPath) return new Response('Not ready', { status: 404 });
   if (s.expiresAt && Date.now() > s.expiresAt) {
     try {
       const { unlink, rm } = await import('node:fs/promises');

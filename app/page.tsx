@@ -7,6 +7,7 @@ type BuildOptions = {
   ids: string;
   stitch: boolean;
   rawOnly: boolean;
+  smartSeam: boolean;
   splitHeight: number;
   outType: '.png' | '.jpg' | '.webp';
   widthEnforce: 0 | 1 | 2;
@@ -29,6 +30,7 @@ export default function Page() {
     ids: '',
     stitch: true,
     rawOnly: false,
+    smartSeam: false,
     splitHeight: 5000,
     outType: '.png',
     widthEnforce: 1,
@@ -71,11 +73,9 @@ export default function Page() {
     const es = new EventSource(`/api/progress?jobId=${encodeURIComponent(jobId)}`);
     es.onmessage = (ev) => {
       const data: StatusMessage = JSON.parse(ev.data);
-      if (data.type === 'stage') {
-        setStage(data.stage || '');
-      } else if (data.type === 'progress') {
-        setPercent(data.percent || 0);
-      } else if (data.type === 'done') {
+      if (data.type === 'stage') setStage(data.stage || '');
+      else if (data.type === 'progress') setPercent(data.percent || 0);
+      else if (data.type === 'done') {
         setStage('Done');
         setPercent(100);
         setDownloadUrl(data.downloadUrl || null);
@@ -115,8 +115,8 @@ export default function Page() {
 
         <div className="grid md:grid-cols-2 gap-4">
           <div className="grid gap-2">
-            <label className="text-sm text-neutral-300">Split height</label>
-            <input type="number" min={1000} max={20000}
+            <label className="text-sm text-neutral-300">Split height (max 24000)</label>
+            <input type="number" min={1000} max={24000}
               className="rounded-xl bg-neutral-800 px-3 py-2"
               value={form.splitHeight}
               onChange={(e) => setForm({ ...form, splitHeight: Number(e.target.value) })}
@@ -157,7 +157,7 @@ export default function Page() {
           <div className="grid gap-2">
             <label className="inline-flex items-center gap-2 text-sm text-neutral-300">
               <input type="checkbox" checked={form.stitch}
-                onChange={(e) => setForm({ ...form, stitch: e.target.checked })}/>
+                onChange={(e) => setForm({ ...form, stitch: e.target.checked, rawOnly: e.target.checked ? false : form.rawOnly })}/>
               Stitch after download
             </label>
           </div>
@@ -167,6 +167,16 @@ export default function Page() {
                 onChange={(e) => setForm({ ...form, rawOnly: e.target.checked, stitch: e.target.checked ? false : form.stitch })}/>
               Save raw images only (no stitch)
             </label>
+          </div>
+          <div className="grid gap-2">
+            <label className="inline-flex items-center gap-2 text-sm text-neutral-300">
+              <input type="checkbox" checked={form.smartSeam}
+                onChange={(e) => setForm({ ...form, smartSeam: e.target.checked })}/>
+              Smart seam (experimental)
+            </label>
+            <div className="text-xs text-neutral-500">
+              Cari batas potong di area kosong sekitar split height. Lebih rapi untuk bubble/panel, sedikit lebih lambat.
+            </div>
           </div>
           <div className="grid gap-2">
             <label className="inline-flex items-center gap-2 text-sm text-neutral-300">

@@ -1,4 +1,3 @@
-import { NextResponse } from 'next/server';
 import { store } from '@/app/api/_store';
 
 export const runtime = 'nodejs';
@@ -10,7 +9,6 @@ export async function GET(req: Request) {
   return new Response(new ReadableStream({
     start(controller) {
       const enc = new TextEncoder();
-
       const send = () => {
         const s = store.get(jobId);
         if (!s) {
@@ -32,10 +30,8 @@ export async function GET(req: Request) {
         controller.enqueue(enc.encode(`data: ${JSON.stringify({ type: 'stage', stage: s.stage })}\n\n`));
         controller.enqueue(enc.encode(`data: ${JSON.stringify({ type: 'progress', percent: s.percent })}\n\n`));
       };
-
       const t = setInterval(send, 500);
       send();
-
       return () => clearInterval(t as any);
     }
   }), {
