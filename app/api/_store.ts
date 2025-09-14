@@ -26,6 +26,10 @@ function ensureCleanupTimer() {
             await unlink(s.downloadPath).catch(() => {});
             const dir = dirname(s.downloadPath).replace(/\.zip$/i, '');
             await rm(dir, { recursive: true, force: true }).catch(() => {});
+            // di dalam loop cleanup
+const { tmpdir } = await import('node:os');
+const { join } = await import('node:path');
+await unlink(join(tmpdir(), `bato-${id}.json`)).catch(() => {});
           } catch {}
           toDelete.push(id);
         }
